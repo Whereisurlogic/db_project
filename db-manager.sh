@@ -17,7 +17,7 @@ check_db_param()
     return 1
 }
 
-
+#логика
 case "$1" in
 
     #create type_db name_db password_db
