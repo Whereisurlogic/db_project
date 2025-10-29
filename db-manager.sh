@@ -2,6 +2,8 @@
 
 dbs_param=("postgres" "mysql")
 
+
+
 check_db_param()
 {
     for db in "${dbs_param[@]}"; do
@@ -79,12 +81,3 @@ case "$1" in
     #тут нужен полный гайд по командам
     ;;
 esac
-
-
-    
-
-
-
-
-
-    
