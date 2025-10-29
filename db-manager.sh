@@ -2,11 +2,6 @@
 
 dbs_param=("postgres" "mysql")
 
-#usage function
-usage() {
-    ec
-}
-
 check_db_param()
 {
     for db in "${dbs_param[@]}"; do
