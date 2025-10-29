@@ -23,6 +23,7 @@ case "$1" in
 
     if [ $# -ne 4 ]; then
     echo "One of the parameters is missing"
+    #тут нужен гайд по команде create
     exit 1
     fi
 
@@ -32,7 +33,9 @@ case "$1" in
     fi;;
 
     *)
-    echo "No params"
+    echo "No params" 
+    #тут нужен полный гайд по командам
+    ;;
 esac
 
 
