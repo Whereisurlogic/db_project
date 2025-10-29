@@ -1,6 +1,6 @@
 #!/bin/bash
 
-dbs_param = ("postgres" "mysql")
+dbs_param=("postgres" "mysql")
 
 #usage function
 usage() {
@@ -9,8 +9,8 @@ usage() {
 
 check_db_param()
 {
-    for db in dbs_param; do
-        if [[ "$db" == $1]]; then
+    for db in "${dbs_param[@]}"; do
+        if [[ "$db" == "$1" ]]; then
         return 0
         fi
     done
@@ -18,17 +18,22 @@ check_db_param()
 }
 
 
-case "$1" in:
+case "$1" in
     "create")
 
-    if test $2 || $3 || $4; then
+    if [ $# -ne 4 ]; then
     echo "One of the parameters is missing"
     exit 1
     fi
 
-    if [[ check_db_param($2) == 1 ]]; then
+    if ! check_db_param "$2"; then
     echo "Can't find this type of db. Correct types: ${dbs_param[*]}"
     exit 1
+    fi;;
+
+    *)
+    echo "No params"
+esac
 
 
     
