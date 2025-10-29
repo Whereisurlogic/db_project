@@ -19,10 +19,12 @@ check_db_param()
 
 
 case "$1" in
+
+    #create type_db name_db password_db
     "create")
 
     if [ $# -ne 4 ]; then
-    echo "One of the parameters is missing"
+    echo "The parameters are specified incorrectly"
     #тут нужен гайд по команде create
     exit 1
     fi
@@ -31,6 +33,51 @@ case "$1" in
     echo "Can't find this type of db. Correct types: ${dbs_param[*]}"
     exit 1
     fi;;
+
+
+    #start name_db
+    "start")
+
+    if [ $# -ne 2 ]; then
+    echo "The parameters are specified incorrectly"
+    #тут нужен гайд по команде start
+    exit 1
+    fi
+    #логика start
+    ;;
+
+    #stop name_db
+    "stop")
+
+    if [ $# -ne 2 ]; then
+    echo "The parameters are specified incorrectly"
+    #тут нужен гайд по команде stop
+    exit 1
+    fi
+    #логика stop
+    ;;
+
+    #delete name_db
+    "delete")
+
+    if [ $# -ne 2 ]; then
+    echo "The parameters are specified incorrectly"
+    #тут нужен гайд по команде delete
+    exit 1
+    fi
+    #логика delete
+    ;;
+
+    #backup name_db path_to_save_backup
+    "backup")
+
+    if [ $# -ne 3 ]; then
+    echo "The parameters are specified incorrectly"
+    #тут нужен гайд по команде delete
+    exit 1
+    fi
+    #логика delete
+    ;;
 
     *)
     echo "No params" 
