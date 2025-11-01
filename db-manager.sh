@@ -2,8 +2,6 @@
 
 dbs_param=("postgres" "mysql")
 
-
-
 check_db_param()
 {
     for db in "${dbs_param[@]}"; do
@@ -14,6 +12,100 @@ check_db_param()
     return 1
 }
 
+usage_create()      #гайд по команде create
+{
+cat << EOF
+Создание изолированного экземпляра базы данных
+
+USAGE:
+    $SCRIPT_NAME create TYPE PROJECT PASSWORD
+
+ПАРАМЕТРЫ:
+    TYPE          Тип базы данных (postgres, mysql)
+    PROJECT       Имя проекта/экземпляра
+    PASSWORD      Пароль для базы данных
+
+EOF
+}
+
+usage_start()       #гайд по команде start
+{
+    cat << EOF
+Запуск существующего экземпляра базы данных
+
+USAGE:
+    $SCRIPT_NAME start [OPTIONS]
+
+ОПЦИИ:
+    -p, --project NAME       Имя проекта для запуска
+    -h, --help               Показать эту справку
+
+EOF
+}
+
+usage_stop()        #гайд по команде stop
+{
+    cat << EOF
+Остановка экземпляра базы данных
+
+USAGE:
+    $SCRIPT_NAME stop [OPTIONS]
+
+ОПЦИИ:
+    -p, --project NAME       Имя проекта для остановки
+    -h, --help               Показать эту справку
+
+EOF
+}
+
+usage_delete()      #гайд по команде delete
+{
+    cat << EOF
+Удаление экземпляра базы данных
+
+USAGE:
+    $SCRIPT_NAME delete [OPTIONS]
+
+ОПЦИИ:
+    -p, --project NAME       Имя проекта для удаления
+    -h, --help               Показать эту справку
+
+EOF
+}
+
+usage_full()        #полный гайд по командам
+{
+    cat << EOF
+Менеджер изолированных баз данных
+
+USAGE:
+    $SCRIPT_NAME COMMAND [OPTIONS]
+
+КОМАНДЫ:
+    create    Создать новый экземпляр базы данных
+    start     Запустить существующий экземпляр
+    stop      Остановить экземпляр
+    delete    Удалить экземпляр
+    backup    Резервное копирование экземпляра
+
+EOF
+}
+
+usage_backup()      #гайд по команде backup
+{
+ cat << EOF
+Резервное копирование экземпляра базы данных
+
+USAGE:
+    $SCRIPT_NAME backup PROJECT BACKUP_PATH
+
+ПАРАМЕТРЫ:
+    PROJECT      Имя проекта для резервного копирования
+    BACKUP_PATH  Путь для сохранения резервной копии
+
+EOF
+}
+
 #логика
 case "$1" in
 
@@ -22,7 +114,7 @@ case "$1" in
 
     if [ $# -ne 4 ]; then
     echo "The parameters are specified incorrectly"
-    #тут нужен гайд по команде create
+    usage_create
     exit 1
     fi
 
@@ -37,7 +129,7 @@ case "$1" in
 
     if [ $# -ne 2 ]; then
     echo "The parameters are specified incorrectly"
-    #тут нужен гайд по команде start
+    usage_start
     exit 1
     fi
     #логика start
@@ -48,7 +140,7 @@ case "$1" in
 
     if [ $# -ne 2 ]; then
     echo "The parameters are specified incorrectly"
-    #тут нужен гайд по команде stop
+    usage_stop
     exit 1
     fi
     #логика stop
@@ -59,7 +151,7 @@ case "$1" in
 
     if [ $# -ne 2 ]; then
     echo "The parameters are specified incorrectly"
-    #тут нужен гайд по команде delete
+    usage_delete
     exit 1
     fi
     #логика delete
@@ -70,14 +162,14 @@ case "$1" in
 
     if [ $# -ne 3 ]; then
     echo "The parameters are specified incorrectly"
-    #тут нужен гайд по команде delete
+    usage_backup
     exit 1
     fi
-    #логика delete
+    #логика backup
     ;;
 
     *)
     echo "No params" 
-    #тут нужен полный гайд по командам
+    usage_full
     ;;
 esac
