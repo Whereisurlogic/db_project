@@ -110,7 +110,7 @@ case "$1" in
     "create")
 
     if [ $# -ne 4 ]; then
-    echo "The parameters are specified incorrectly"
+    echo "Параметры указаны неправильно"
     usage_create
     exit 1
     fi
@@ -125,7 +125,7 @@ case "$1" in
     "start")
 
     if [ $# -ne 2 ]; then
-    echo "The parameters are specified incorrectly"
+    echo "Параметры указаны неправильно"
     usage_start
     exit 1
     fi
@@ -136,7 +136,7 @@ case "$1" in
     "stop")
 
     if [ $# -ne 2 ]; then
-    echo "The parameters are specified incorrectly"
+    echo "Параметры указаны неправильно"
     usage_stop
     exit 1
     fi
@@ -147,7 +147,7 @@ case "$1" in
     "delete")
 
     if [ $# -ne 2 ]; then
-    echo "The parameters are specified incorrectly"
+    echo "Параметры указаны неправильно"
     usage_delete
     exit 1
     fi
@@ -158,7 +158,7 @@ case "$1" in
     "backup")
 
     if [ $# -ne 3 ]; then
-    echo "The parameters are specified incorrectly"
+    echo "Параметры указаны неправильно"
     usage_backup
     exit 1
     fi
