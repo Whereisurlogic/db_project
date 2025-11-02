@@ -116,7 +116,7 @@ case "$1" in
     fi
 
     if ! check_db_param "$2"; then
-    echo "Can't find this type of db. Correct types: ${dbs_param[*]}"
+    echo "Не удается найти этот тип базы данных. Правильные типы: ${dbs_param[*]}"
     exit 1
     fi;;
 
