@@ -14,10 +14,10 @@ check_db_param()
 
 usage_create()      #гайд по команде create
 {
-cat << EOF
+cat << KEFTEME
 Создание изолированного экземпляра базы данных
 
-USAGE:
+ИСПОЛЬЗОВАНИЕ:
     $SCRIPT_NAME create TYPE PROJECT PASSWORD
 
 ПАРАМЕТРЫ:
@@ -25,61 +25,58 @@ USAGE:
     PROJECT       Имя проекта/экземпляра
     PASSWORD      Пароль для базы данных
 
-EOF
+KEFTEME
 }
 
 usage_start()       #гайд по команде start
 {
-    cat << EOF
+    cat << KEFTEME
 Запуск существующего экземпляра базы данных
 
-USAGE:
-    $SCRIPT_NAME start [OPTIONS]
+ИСПОЛЬЗОВАНИЕ:
+    $SCRIPT_NAME start [ПАРАМЕТРЫ]
 
-ОПЦИИ:
-    -p, --project NAME       Имя проекта для запуска
-    -h, --help               Показать эту справку
+ПАРАМЕТРЫ:
+    PROJECT NAME       Имя проекта для запуска
 
-EOF
+KEFTEME
 }
 
 usage_stop()        #гайд по команде stop
 {
-    cat << EOF
+    cat << KEFTEME
 Остановка экземпляра базы данных
 
-USAGE:
-    $SCRIPT_NAME stop [OPTIONS]
+ИСПОЛЬЗОВАНИЕ:
+    $SCRIPT_NAME stop [ПАРАМЕТРЫ]
 
-ОПЦИИ:
-    -p, --project NAME       Имя проекта для остановки
-    -h, --help               Показать эту справку
+ПАРАМЕТРЫ:
+    PROJECT NAME       Имя проекта для остановки
 
-EOF
+KEFTEME
 }
 
 usage_delete()      #гайд по команде delete
 {
-    cat << EOF
+    cat << KEFTEME
 Удаление экземпляра базы данных
 
-USAGE:
-    $SCRIPT_NAME delete [OPTIONS]
+ИСПОЛЬЗОВАНИЕ:
+    $SCRIPT_NAME delete [ПАРАМЕТРЫ]
 
-ОПЦИИ:
-    -p, --project NAME       Имя проекта для удаления
-    -h, --help               Показать эту справку
+ПАРАМЕТРЫ:
+    PROJECT NAME       Имя проекта для удаления
 
-EOF
+KEFTEME
 }
 
 usage_full()        #полный гайд по командам
 {
-    cat << EOF
+    cat << KEFTEME
 Менеджер изолированных баз данных
 
-USAGE:
-    $SCRIPT_NAME COMMAND [OPTIONS]
+ИСПОЛЬЗОВАНИЕ:
+    $SCRIPT_NAME КОМАНДА [ПАРАМЕТРЫ]
 
 КОМАНДЫ:
     create    Создать новый экземпляр базы данных
@@ -88,22 +85,22 @@ USAGE:
     delete    Удалить экземпляр
     backup    Резервное копирование экземпляра
 
-EOF
+KEFTEME
 }
 
 usage_backup()      #гайд по команде backup
 {
- cat << EOF
+ cat << KEFTEME
 Резервное копирование экземпляра базы данных
 
-USAGE:
+ИСПОЛЬЗОВАНИЕ:
     $SCRIPT_NAME backup PROJECT BACKUP_PATH
 
 ПАРАМЕТРЫ:
     PROJECT      Имя проекта для резервного копирования
     BACKUP_PATH  Путь для сохранения резервной копии
 
-EOF
+KEFTEME
 }
 
 #логика
