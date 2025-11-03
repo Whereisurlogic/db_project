@@ -2,6 +2,15 @@
 
 dbs_param=("postgres" "mysql")
 
+# Проверка прав
+check_sudo()
+{
+    if [[ $EUID -ne 0 ]]; then
+    echo "Необходимы права root"
+    exit 1
+    fi
+}
+
 check_db_param()
 {
     for db in "${dbs_param[@]}"; do
