@@ -112,6 +112,8 @@ usage_backup()      #гайд по команде backup
 KEFTEME
 }
 
+check_sudo
+
 #логика
 case "$1" in
 
