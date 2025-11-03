@@ -2,11 +2,6 @@
 
 dbs_param=("postgres" "mysql")
 
-#usage function
-usage() {
-    ec
-}
-
 check_db_param()
 {
     for db in "${dbs_param[@]}"; do
@@ -17,6 +12,97 @@ check_db_param()
     return 1
 }
 
+usage_create()      #гайд по команде create
+{
+cat << KEFTEME
+Создание изолированного экземпляра базы данных
+
+ИСПОЛЬЗОВАНИЕ:
+    $SCRIPT_NAME create TYPE PROJECT PASSWORD
+
+ПАРАМЕТРЫ:
+    TYPE          Тип базы данных (postgres, mysql)
+    PROJECT       Имя проекта/экземпляра
+    PASSWORD      Пароль для базы данных
+
+KEFTEME
+}
+
+usage_start()       #гайд по команде start
+{
+    cat << KEFTEME
+Запуск существующего экземпляра базы данных
+
+ИСПОЛЬЗОВАНИЕ:
+    $SCRIPT_NAME start [ПАРАМЕТРЫ]
+
+ПАРАМЕТРЫ:
+    PROJECT NAME       Имя проекта для запуска
+
+KEFTEME
+}
+
+usage_stop()        #гайд по команде stop
+{
+    cat << KEFTEME
+Остановка экземпляра базы данных
+
+ИСПОЛЬЗОВАНИЕ:
+    $SCRIPT_NAME stop [ПАРАМЕТРЫ]
+
+ПАРАМЕТРЫ:
+    PROJECT NAME       Имя проекта для остановки
+
+KEFTEME
+}
+
+usage_delete()      #гайд по команде delete
+{
+    cat << KEFTEME
+Удаление экземпляра базы данных
+
+ИСПОЛЬЗОВАНИЕ:
+    $SCRIPT_NAME delete [ПАРАМЕТРЫ]
+
+ПАРАМЕТРЫ:
+    PROJECT NAME       Имя проекта для удаления
+
+KEFTEME
+}
+
+usage_full()        #полный гайд по командам
+{
+    cat << KEFTEME
+Менеджер изолированных баз данных
+
+ИСПОЛЬЗОВАНИЕ:
+    $SCRIPT_NAME КОМАНДА [ПАРАМЕТРЫ]
+
+КОМАНДЫ:
+    create    Создать новый экземпляр базы данных
+    start     Запустить существующий экземпляр
+    stop      Остановить экземпляр
+    delete    Удалить экземпляр
+    backup    Резервное копирование экземпляра
+
+KEFTEME
+}
+
+usage_backup()      #гайд по команде backup
+{
+ cat << KEFTEME
+Резервное копирование экземпляра базы данных
+
+ИСПОЛЬЗОВАНИЕ:
+    $SCRIPT_NAME backup PROJECT BACKUP_PATH
+
+ПАРАМЕТРЫ:
+    PROJECT      Имя проекта для резервного копирования
+    BACKUP_PATH  Путь для сохранения резервной копии
+
+KEFTEME
+}
+
 #логика
 case "$1" in
 
@@ -24,13 +110,13 @@ case "$1" in
     "create")
 
     if [ $# -ne 4 ]; then
-    echo "The parameters are specified incorrectly"
-    #тут нужен гайд по команде create
+    echo "Параметры указаны неправильно"
+    usage_create
     exit 1
     fi
 
     if ! check_db_param "$2"; then
-    echo "Can't find this type of db. Correct types: ${dbs_param[*]}"
+    echo "Не удается найти этот тип базы данных. Правильные типы: ${dbs_param[*]}"
     exit 1
     fi;;
 
@@ -39,8 +125,8 @@ case "$1" in
     "start")
 
     if [ $# -ne 2 ]; then
-    echo "The parameters are specified incorrectly"
-    #тут нужен гайд по команде start
+    echo "Параметры указаны неправильно"
+    usage_start
     exit 1
     fi
     #логика start
@@ -50,8 +136,8 @@ case "$1" in
     "stop")
 
     if [ $# -ne 2 ]; then
-    echo "The parameters are specified incorrectly"
-    #тут нужен гайд по команде stop
+    echo "Параметры указаны неправильно"
+    usage_stop
     exit 1
     fi
     #логика stop
@@ -61,8 +147,8 @@ case "$1" in
     "delete")
 
     if [ $# -ne 2 ]; then
-    echo "The parameters are specified incorrectly"
-    #тут нужен гайд по команде delete
+    echo "Параметры указаны неправильно"
+    usage_delete
     exit 1
     fi
     #логика delete
@@ -72,24 +158,15 @@ case "$1" in
     "backup")
 
     if [ $# -ne 3 ]; then
-    echo "The parameters are specified incorrectly"
-    #тут нужен гайд по команде delete
+    echo "Параметры указаны неправильно"
+    usage_backup
     exit 1
     fi
-    #логика delete
+    #логика backup
     ;;
 
     *)
     echo "No params" 
-    #тут нужен полный гайд по командам
+    usage_full
     ;;
 esac
-
-
-    
-
-
-
-
-
-    
