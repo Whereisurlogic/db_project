@@ -5,7 +5,12 @@ dbs_param=("postgres" "mysql")
 #Create db with following params: $1 name, $2 pwd, $3 type
 create_db()
 {
-    
+    name_compose="$3-$1-compose.yml";
+
+    if [[ -f "$name_compose" ]]; then
+        echo "База данных с такими же параметрами уже существует. Переменуйте"
+        exit 1
+    fi
 }
 
 
