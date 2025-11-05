@@ -2,6 +2,13 @@
 
 dbs_param=("postgres" "mysql")
 
+#Create db with following params: $1 name, $2 pwd, $3 type
+create_db()
+{
+    
+}
+
+
 # Проверка прав
 check_sudo()
 {
