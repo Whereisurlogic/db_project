@@ -2,15 +2,21 @@
 
 dbs_param=("postgres" "mysql")
 
+check_db_exits()
+{
+    if [ docker ps -aq -f name=^$1 ]; then
+    return 1
+    else return 0
+    fi
+}
+
 #Create db with following params: $1 name, $2 pwd, $3 type
 create_db()
 {
     name_compose="$3-$1-compose.yml";
+    container_name="$3-$1";
 
-    if [[ -f "$name_compose" ]]; then
-        echo "База данных с такими же параметрами уже существует. Переменуйте"
-        exit 1
-    fi
+    check_db_exits "container_name";
 }
 
 
