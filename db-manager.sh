@@ -2,6 +2,84 @@
 
 dbs_type=("postgres" "mysql")
 
+find_free_port() {
+    local port
+    
+    for port in {5000..6000}; do
+        
+        if ! nc -z localhost $port >/dev/null 2>&1; then
+            
+            if ! docker ps -a --format "table {{.Ports}}" | grep -q ":${port}->"; then
+                echo $port
+                return 0
+            fi
+        fi
+    done
+    echo "Не удалось найти свободный порт" >&2
+    return 1
+}
+
+# PARAMS: $1 - db_type, $2 - db_name, $3 - pwd, $4 port; RETURNS: compose-file with folowing name "$1-$2-compose.yml", container name
+create_compose() {
+    local name_compose="$1-$2-compose.yml"
+
+    if [ "${dbs_type[0]}" = "$1" ]; then
+        local type="${dbs_type[0]}"
+
+        cat > "$name_compose" << EOF
+services:
+ $1-db:
+  image: $type:latest
+  container_name: $2
+  environment:
+   POSTGRES_USER: $2
+   POSTGRES_PASSWORD: $3
+   POSTGRES_DB: $2
+  ports:
+   - "$4:5432"
+  volumes:
+   - ./$2:/var/lib/postgresql
+  networks:
+   - $2-net
+
+networks:
+ $2-net:
+  driver: bridge
+EOF
+
+
+    elif [ "${dbs_type[1]}" = "$1" ]; then
+        local type="${dbs_type[1]}"
+        cat > "$name_compose" << EOF
+services:
+ $1-db:
+  image: $type:latest
+  container_name: $2
+  environment:
+   MYSQL_USER: $2
+   MYSQL_PASSWORD: $3
+   MYSQL_ROOT_PASSWORD: $3
+   MYSQL_DATABASE: $2
+  ports:
+   - "$4:3306"
+  volumes:
+   - ./$2:/var/lib/mysql
+  networks:
+   - $2-net
+
+networks:
+ $2-net:
+  driver: bridge
+EOF
+
+    else
+        echo "Неизвестный тип БД: $1"
+        return 1
+    fi
+
+}
+
+
 # RETURNS True if container exits, else False
 check_db_exits()
 {
@@ -16,10 +94,43 @@ check_db_exits()
 #Create db with following params: $1 name, $2 pwd, $3 type
 create_db()
 {
-    name_compose="$3-$1-compose.yml";
-    container_name="$3-$1";
+    local container_name=$1;
 
-    check_db_exits "container_name";
+    if ! check_db_exits "$container_name"; then
+    echo "Контейнер с таким именем уже существует"
+    exit 1
+    fi
+
+    local free_port=$(find_free_port)
+
+    if create_compose $3 $container_name $2 $free_port; then
+
+    docker compose -f "$3-$1-compose.yml" up -d
+
+        if [ $? -eq 0 ]; then
+
+        echo "Контейнер собран успешно!"
+        echo "Имя контейнера: $container_name"
+        echo "Порт подключения: $free_port:(порт по умолчанию для бд)"
+        echo "Имя бд совпадает с именем контейнера"
+        echo "Логин пользователя совпадает с именем контейнера"
+        echo "Пароль: $2"
+        
+
+        
+        else
+        echo "Что-то пошло не так при сборке контейнера"
+        fi
+    
+    rm -f "$3-$1-compose.yml"
+
+    else
+
+    echo "Что-то пошло не так при поиске сгенирированного compose файла"
+    exit 0
+    fi
+
+
 }
 
 
@@ -152,12 +263,7 @@ case "$1" in
     exit 1
     fi
 
-    
-    
-    if ! check_db_exits "$3"; then
-    echo "Контейнер с таким именем уже существует"
-    exit 1
-    fi
+    create_db $3 $4 $2
     ;;
 
 
@@ -213,3 +319,4 @@ esac
 
 
 #Забавно, что тут нет булевых типов данных. условные выражения проверяют выполнился ли код или нет. Т.е. 0 - это хорошо выполнился, 1 - что то не так.
+#https://stackoverflow.com/questions/19670061/bash-if-false-returns-true-instead-of-false-why
