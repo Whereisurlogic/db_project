@@ -51,7 +51,7 @@ cat << KEFTEME
     $SCRIPT_NAME create TYPE PROJECT PASSWORD
 
 ПАРАМЕТРЫ:
-    TYPE          Тип базы данных (postgres, mysql)
+    TYPE          Тип базы данных (${dbs_type[@]})
     PROJECT       Имя проекта/экземпляра
     PASSWORD      Пароль для базы данных
 
