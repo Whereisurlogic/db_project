@@ -1,10 +1,13 @@
 #!/bin/bash
 
-dbs_param=("postgres" "mysql")
+dbs_type=("postgres" "mysql")
 
+# RETURNS True if container exits, else False
 check_db_exits()
 {
-    if [ docker ps -aq -f name=^$1 ]; then
+    #$() - ожидание вывода ответа команды
+    # ^ - начало имени файла $1 - подставляемый параметр $ - часть регулярного выражения, конца имени. Тем самым мы будем искать конкретное имя
+    if [ $(docker ps -aq -f name=^$1$) ]; then
     return 1
     else return 0
     fi
@@ -29,9 +32,9 @@ check_sudo()
     fi
 }
 
-check_db_param()
+check_db_type()
 {
-    for db in "${dbs_param[@]}"; do
+    for db in "${dbs_type[@]}"; do
         if [[ "$db" == "$1" ]]; then
         return 0
         fi
@@ -132,7 +135,7 @@ KEFTEME
 
 check_sudo
 
-#логика
+
 case "$1" in
 
     #create type_db name_db password_db
@@ -145,9 +148,15 @@ case "$1" in
     fi
 
     if ! check_db_param "$2"; then
-    echo "Не удается найти этот тип базы данных. Правильные типы: ${dbs_param[*]}"
+    echo "Не удается найти этот тип базы данных. Правильные типы: ${dbs_type[*]}"
     exit 1
-    fi;;
+    fi
+    
+    if check_db_exits "$3"; then
+    echo "Контейнер с таким именем уже существует"
+    exit 1
+    fi
+    ;;
 
 
     #start name_db
