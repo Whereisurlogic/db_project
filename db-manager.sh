@@ -1,6 +1,138 @@
 #!/bin/bash
 
-dbs_param=("postgres" "mysql")
+dbs_type=("postgres" "mysql")
+
+find_free_port() {
+    local port
+    
+    for port in {5000..6000}; do
+        
+        if ! nc -z localhost $port >/dev/null 2>&1; then
+            
+            if ! docker ps -a --format "table {{.Ports}}" | grep -q ":${port}->"; then
+                echo $port
+                return 0
+            fi
+        fi
+    done
+    echo "Не удалось найти свободный порт" >&2
+    return 1
+}
+
+# PARAMS: $1 - db_type, $2 - db_name, $3 - pwd, $4 port; RETURNS: compose-file with folowing name "$1-$2-compose.yml", container name
+create_compose() {
+    local name_compose="$1-$2-compose.yml"
+
+    if [ "${dbs_type[0]}" = "$1" ]; then
+        local type="${dbs_type[0]}"
+
+        cat > "$name_compose" << EOF
+services:
+ $1-db:
+  image: $type:latest
+  container_name: $2
+  environment:
+   POSTGRES_USER: $2
+   POSTGRES_PASSWORD: $3
+   POSTGRES_DB: $2
+  ports:
+   - "$4:5432"
+  volumes:
+   - ./$2:/var/lib/postgresql
+  networks:
+   - $2-net
+
+networks:
+ $2-net:
+  driver: bridge
+EOF
+
+
+    elif [ "${dbs_type[1]}" = "$1" ]; then
+        local type="${dbs_type[1]}"
+        cat > "$name_compose" << EOF
+services:
+ $1-db:
+  image: $type:latest
+  container_name: $2
+  environment:
+   MYSQL_USER: $2
+   MYSQL_PASSWORD: $3
+   MYSQL_ROOT_PASSWORD: $3
+   MYSQL_DATABASE: $2
+  ports:
+   - "$4:3306"
+  volumes:
+   - ./$2:/var/lib/mysql
+  networks:
+   - $2-net
+
+networks:
+ $2-net:
+  driver: bridge
+EOF
+
+    else
+        echo "Неизвестный тип БД: $1"
+        return 1
+    fi
+
+}
+
+
+# RETURNS True if container exits, else False
+check_db_exits()
+{
+    #$() - ожидание вывода ответа команды
+    # ^ - начало имени файла $1 - подставляемый параметр $ - часть регулярного выражения, конца имени. Тем самым мы будем искать конкретное имя
+    if [ $(docker ps -aq -f name="^$1$") ]; then
+    return 1
+    else return 0
+    fi
+}
+
+#Create db with following params: $1 name, $2 pwd, $3 type
+create_db()
+{
+    local container_name=$1;
+
+    if ! check_db_exits "$container_name"; then
+    echo "Контейнер с таким именем уже существует"
+    exit 1
+    fi
+
+    local free_port=$(find_free_port)
+
+    if create_compose $3 $container_name $2 $free_port; then
+
+    docker compose -f "$3-$1-compose.yml" up -d
+
+        if [ $? -eq 0 ]; then
+
+        echo "Контейнер собран успешно!"
+        echo "Имя контейнера: $container_name"
+        echo "Порт подключения: $free_port:(порт по умолчанию для бд)"
+        echo "Имя бд совпадает с именем контейнера"
+        echo "Логин пользователя совпадает с именем контейнера"
+        echo "Пароль: $2"
+        
+
+        
+        else
+        echo "Что-то пошло не так при сборке контейнера"
+        fi
+    
+    rm -f "$3-$1-compose.yml"
+
+    else
+
+    echo "Что-то пошло не так при поиске сгенирированного compose файла"
+    exit 0
+    fi
+
+
+}
+
 
 # Проверка прав
 check_sudo()
@@ -11,9 +143,9 @@ check_sudo()
     fi
 }
 
-check_db_param()
+check_db_type()
 {
-    for db in "${dbs_param[@]}"; do
+    for db in "${dbs_type[@]}"; do
         if [[ "$db" == "$1" ]]; then
         return 0
         fi
@@ -30,7 +162,7 @@ cat << KEFTEME
     $SCRIPT_NAME create TYPE PROJECT PASSWORD
 
 ПАРАМЕТРЫ:
-    TYPE          Тип базы данных (postgres, mysql)
+    TYPE          Тип базы данных (${dbs_type[@]})
     PROJECT       Имя проекта/экземпляра
     PASSWORD      Пароль для базы данных
 
@@ -114,7 +246,7 @@ KEFTEME
 
 check_sudo
 
-#логика
+
 case "$1" in
 
     #create type_db name_db password_db
@@ -126,10 +258,13 @@ case "$1" in
     exit 1
     fi
 
-    if ! check_db_param "$2"; then
-    echo "Не удается найти этот тип базы данных. Правильные типы: ${dbs_param[*]}"
+    if ! check_db_type "$2"; then
+    echo "Не удается найти данный ($2) тип базы данных. Правильные типы: ${dbs_type[*]}"
     exit 1
-    fi;;
+    fi
+
+    create_db $3 $4 $2
+    ;;
 
 
     #start name_db
@@ -181,3 +316,7 @@ case "$1" in
     usage_full
     ;;
 esac
+
+
+#Забавно, что тут нет булевых типов данных. условные выражения проверяют выполнился ли код или нет. Т.е. 0 - это хорошо выполнился, 1 - что то не так.
+#https://stackoverflow.com/questions/19670061/bash-if-false-returns-true-instead-of-false-why
