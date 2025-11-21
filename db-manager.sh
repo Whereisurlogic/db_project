@@ -297,7 +297,24 @@ case "$1" in
     usage_delete
     exit 1
     fi
-    #логика delete
+    
+    if check_db_exits "$2"; then
+    echo "Нет контейнера с таким именем!"
+    exit 1
+    fi
+
+    
+    docker stop "$2" >/dev/null 2>&1
+
+
+    if docker rm "$2" >/dev/null 2>&1; then
+    echo "Контейнер $2 успешно удален"
+    rm -r "$2"
+    else
+    echo "Не удалось удалить контейнер $2"
+    exit 1
+    fi
+
     ;;
 
     #backup name_db path_to_save_backup
