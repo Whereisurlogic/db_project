@@ -326,7 +326,50 @@ case "$1" in
     exit 1
     fi
     #логика backup
+    
+    if check_db_exits "$2"; then
+    echo "Нет контейнера с таким именем! $2"
+    exit 1
+    fi
+
+
+    if [ ! -d "$3" ]; then
+    echo "$3 не существует такого пути"
+    exit 1
+    fi
+
+
+    db_type=$(docker inspect "$2" --format='{{index .Config.Labels "com.docker.compose.service"}}')
+    time=$(date +%Y-%m-%d_%H-%M-%S)
+
+    if [ -n "$db_type" ]; then
+        case "$db_type" in
+            "postgres-db")
+                docker exec "$2" pg_dump -U "$2" "$2" > "$3/${2}_${time}.sql"
+            ;;
+            "mysql-db")
+
+            docker exec -i "$2" mysqldump -u root --single-transaction -p "$2" > "$3/${2}_${time}.sql" # --single-transaction - изолирует процесс 
+            ;;
+            *)
+            echo "Неизвестный тип БД: $db_type"
+            exit 1
+            ;;
+        esac
+
+        if [ $? -eq 0 ]; then
+        echo "Бэкап успешно создан: $3/${2}_${time}.sql"
+        else
+        echo "Не удалось сделать бекап"
+        rm -f "$3/${2}_${time}.sql"
+        exit 1
+        fi
+
+    fi
+
     ;;
+
+    
 
     *)
     echo "No params" 
