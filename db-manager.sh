@@ -312,7 +312,6 @@ case "$1" in
     ;;
 
     *)
-    echo "No params" 
     usage_full
     ;;
 esac
