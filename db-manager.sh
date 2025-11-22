@@ -275,7 +275,13 @@ case "$1" in
     usage_start
     exit 1
     fi
-    #логика start
+    
+    if check_db_exits "$2"; then
+        echo "Нет контейнера с таким именем: $2"
+        exit 1
+    fi
+
+    start_db "$2"
     ;;
 
     #stop name_db
@@ -286,7 +292,8 @@ case "$1" in
     usage_stop
     exit 1
     fi
-    #логика stop
+    
+    stop_db "$2"
     ;;
 
     #delete name_db
