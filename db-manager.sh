@@ -247,7 +247,7 @@ KEFTEME
 check_sudo
 
 start_db() { # логика команды start
-  if ! check_db_exits "$1"; then
+  if check_db_exits "$1"; then
     echo "Нет контейнера с именем \"$1\" для запуска."
     exit 1
   fi
@@ -268,7 +268,7 @@ start_db() { # логика команды start
 }
 
 stop_db() { # логика команды stop
-    if ! check_db_exits "$1"; then
+    if check_db_exits "$1"; then
     echo "Нет контейнера с именем \"$1\" для остановки."
     exit 1
   fi
@@ -310,7 +310,6 @@ case "$1" in
 
     #start name_db
     "start")
-    echo "$1 $2"
     if [ $# -ne 2 ]; then
     echo "Параметры указаны неправильно"
     usage_start
