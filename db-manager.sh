@@ -247,44 +247,43 @@ KEFTEME
 check_sudo
 
 start_db() { # логика команды start
-  if ! check_db_exists "$2"; then
-    echo "Нет контейнера с именем \"$2\" для запуска."
+  if ! check_db_exits "$1"; then
+    echo "Нет контейнера с именем \"$1\" для запуска."
     exit 1
   fi
 
   # Проверяем, запущен ли контейнер уже
-  if docker inspect -f "{{.State.Running}}" "$2" | grep -q "true"; then
-    echo "Контейнер \"$2\" уже запущен."
+  if docker inspect -f "{{.State.Running}}" "$1" | grep -q "true"; then
+    echo "Контейнер \"$1\" уже запущен."
     exit 0
   fi
 
-  echo "Запускаем контейнер \"$2\"..."
-  if docker start "$2" >/dev/null 2>&1; then
-    echo "Контейнер \"$2\" успешно запущен."
+  echo "Запускаем контейнер \"$1\"..."
+  if docker start "$1" >/dev/null 2>&1; then
+    echo "Контейнер \"$1\" успешно запущен."
   else
-    echo "Не удалось запустить контейнер \"$2\"."
+    echo "Не удалось запустить контейнер \"$1\"."
     exit 1
   fi
 }
 
-stop_db() { # логика команды start
-  if ! check_db_exists "$2"; then
-    echo "Нет контейнера с именем \"$2\" для запуска."
+stop_db() { # логика команды stop
+    if ! check_db_exits "$1"; then
+    echo "Нет контейнера с именем \"$1\" для остановки."
     exit 1
   fi
 
-  # Проверяем, запущен ли контейнер уже
-  if ! docker inspect -f "{{.State.Running}}" "$2" | grep -q "true"; then
-    echo "Контейнер \"$2\" уже остановлен."
+  # Проверяем, остановлен ли контейнер уже
+  if docker inspect -f "{{.State.Running}}" "$1" | grep -q "false"; then
+    echo "Контейнер \"$1\" уже остановлен."
     exit 0
   fi
 
-  echo "Останавливаем контейнер \"$2\"..."
-
-  if docker stop "$2" >/dev/null 2>&1; then
-    echo "Контейнер \"$2\" успешно остановлен."
+  echo "Останавливаем контейнер \"$1\"..."
+  if docker stop "$1" >/dev/null 2>&1; then
+    echo "Контейнер \"$1\" успешно остановлен."
   else
-    echo "Не удалось остановить контейнер \"$2\"."
+    echo "Не удалось остановить контейнер \"$1\"."
     exit 1
   fi
 }
@@ -311,16 +310,11 @@ case "$1" in
 
     #start name_db
     "start")
-
+    echo "$1 $2"
     if [ $# -ne 2 ]; then
     echo "Параметры указаны неправильно"
     usage_start
     exit 1
-    fi
-    
-    if check_db_exits "$2"; then
-        echo "Нет контейнера с таким именем: $2"
-        exit 1
     fi
 
     start_db "$2"
