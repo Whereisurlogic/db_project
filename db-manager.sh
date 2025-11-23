@@ -246,6 +246,27 @@ KEFTEME
 
 check_sudo
 
+start_db() { # логика команды start
+  if ! check_db_exists "$2"; then
+    echo "Нет контейнера с именем \"$2\" для запуска."
+    exit 1
+  fi
+
+  # Проверяем, запущен ли контейнер уже
+  if docker inspect -f "{{.State.Running}}" "$2" | grep -q "true"; then
+    echo "Контейнер \"$2\" уже запущен."
+    exit 0
+  fi
+
+  echo "Запускаем контейнер \"$2\"..."
+  if docker start "$2" >/dev/null 2>&1; then
+    echo "Контейнер \"$2\" успешно запущен."
+  else
+    echo "Не удалось запустить контейнер \"$2\"."
+    exit 1
+  fi
+}
+
 
 case "$1" in
 
