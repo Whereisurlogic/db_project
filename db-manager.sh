@@ -2,6 +2,14 @@
 
 dbs_type=("postgres" "mysql")
 
+
+# PARAM $1 - имя контейнера
+delete_net() {
+
+    local name-net="$1-net"
+
+}
+
 find_free_port() {
     local port
     
