@@ -1,6 +1,7 @@
 #!/bin/bash
 
 dbs_type=("postgres" "mysql")
+SCRIPT_NAME=$(basename "$0")
 
 find_free_port() {
     local port
@@ -17,6 +18,29 @@ find_free_port() {
     done
     echo "Не удалось найти свободный порт" >&2
     return 1
+}
+
+# Считывание пароля с безопасным вводом
+read_password() {
+    local prompt="$1"
+    local password
+    
+    while true; do
+        read -s -p "$prompt" password
+        echo
+        if [ -z "$password" ]; then
+            echo "Пароль не может быть пустым. Попробуйте снова." >&2
+        else
+            read -s -p "Повторите пароль: " password2
+            echo
+            if [ "$password" = "$password2" ]; then
+                echo "$password"
+                return 0
+            else
+                echo "Пароли не совпадают. Попробуйте снова." >&2
+            fi
+        fi
+    done
 }
 
 # PARAMS: $1 - db_type, $2 - db_name, $3 - pwd, $4 port; RETURNS: compose-file with folowing name "$1-$2-compose.yml", container name
@@ -103,7 +127,7 @@ create_db()
 
     local free_port=$(find_free_port)
 
-    if create_compose $3 $container_name $2 $free_port; then
+    if create_compose $3 $container_name "$2" $free_port; then
 
     docker compose -f "$3-$1-compose.yml" up -d
 
@@ -114,7 +138,7 @@ create_db()
         echo "Порт подключения: $free_port:(порт по умолчанию для бд)"
         echo "Имя бд совпадает с именем контейнера"
         echo "Логин пользователя совпадает с именем контейнера"
-        echo "Пароль: $2"
+        echo "Пароль: ********"
         
 
         
@@ -159,12 +183,14 @@ cat << KEFTEME
 Создание изолированного экземпляра базы данных
 
 ИСПОЛЬЗОВАНИЕ:
-    $SCRIPT_NAME create TYPE PROJECT PASSWORD
+    $SCRIPT_NAME create TYPE PROJECT
 
 ПАРАМЕТРЫ:
     TYPE          Тип базы данных (${dbs_type[@]})
     PROJECT       Имя проекта/экземпляра
-    PASSWORD      Пароль для базы данных
+
+ПРИМЕЧАНИЕ:
+    Пароль будет запрошен интерактивно с скрытым вводом
 
 KEFTEME
 }
@@ -290,10 +316,10 @@ stop_db() { # логика команды stop
 
 case "$1" in
 
-    #create type_db name_db password_db
+    #create type_db name_db
     "create")
 
-    if [ $# -ne 4 ]; then
+    if [ $# -ne 3 ]; then
     echo "Параметры указаны неправильно"
     usage_create
     exit 1
@@ -304,7 +330,10 @@ case "$1" in
     exit 1
     fi
 
-    create_db $3 $4 $2
+    echo "Введите пароль для базы данных $3:"
+    local db_password=$(read_password "Пароль: ")
+    
+    create_db "$3" "$db_password" "$2"
     ;;
 
 
@@ -388,25 +417,42 @@ case "$1" in
         case "$db_type" in
             "postgres-db")
                 docker exec "$2" pg_dump -U "$2" "$2" > "$3/${2}_${time}.sql"
+                if [ $? -eq 0 ]; then
+                    echo "Бэкап успешно создан: $3/${2}_${time}.sql"
+                else
+                    echo "Не удалось сделать бэкап PostgreSQL"
+                    rm -f "$3/${2}_${time}.sql"
+                    exit 1
+                fi
             ;;
             "mysql-db")
-
-            docker exec -i "$2" mysqldump -u root --single-transaction -p "$2" > "$3/${2}_${time}.sql" # --single-transaction - изолирует процесс 
+                # Получаем root пароль из переменных окружения контейнера
+                mysql_root_password=$(docker inspect "$2" --format='{{range .Config.Env}}{{println .}}{{end}}' | grep "MYSQL_ROOT_PASSWORD=" | cut -d= -f2)
+                
+                if [ -z "$mysql_root_password" ]; then
+                    echo "Не удалось получить пароль MySQL"
+                    exit 1
+                fi
+                
+                # Выполняем бэкап
+                docker exec "$2" mysqldump -u root -p"$mysql_root_password" --single-transaction "$2" > "$3/${2}_${time}.sql"
+                
+                if [ $? -eq 0 ]; then
+                    echo "Бэкап успешно создан: $3/${2}_${time}.sql"
+                else
+                    echo "Не удалось сделать бэкап MySQL"
+                    rm -f "$3/${2}_${time}.sql"
+                    exit 1
+                fi
             ;;
             *)
             echo "Неизвестный тип БД: $db_type"
             exit 1
             ;;
         esac
-
-        if [ $? -eq 0 ]; then
-        echo "Бэкап успешно создан: $3/${2}_${time}.sql"
-        else
-        echo "Не удалось сделать бекап"
-        rm -f "$3/${2}_${time}.sql"
+    else
+        echo "Не удалось определить тип базы данных"
         exit 1
-        fi
-
     fi
 
     ;;
@@ -417,7 +463,3 @@ case "$1" in
     usage_full
     ;;
 esac
-
-
-#Забавно, что тут нет булевых типов данных. условные выражения проверяют выполнился ли код или нет. Т.е. 0 - это хорошо выполнился, 1 - что то не так.
-#https://stackoverflow.com/questions/19670061/bash-if-false-returns-true-instead-of-false-why
