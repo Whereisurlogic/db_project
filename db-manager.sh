@@ -358,8 +358,9 @@ case "$1" in
 
 
     if docker rm "$2" >/dev/null 2>&1; then
+    docker volume prune -f >/dev/null 2>&1
+    docker network prune -f >/dev/null 2>&1
     echo "Контейнер $2 успешно удален"
-    rm -r "$2"
     else
     echo "Не удалось удалить контейнер $2"
     exit 1
