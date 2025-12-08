@@ -36,7 +36,7 @@ create_compose() {
 
         cat > "$name_compose" << EOF
 services:
- $1-db:
+ $2-db:
   image: $type:latest
   container_name: $2
   environment:
@@ -60,7 +60,7 @@ EOF
         local type="${dbs_type[1]}"
         cat > "$name_compose" << EOF
 services:
- $1-db:
+ $2-db:
   image: $type:latest
   container_name: $2
   environment:
@@ -114,7 +114,8 @@ create_db()
 
     if create_compose $3 $container_name $2 $free_port; then
 
-    docker compose -f "$3-$1-compose.yml" up -d
+    docker compose -f "$3-$1-compose.yml" up -d >/dev/null 2>&1
+
 
         if [ $? -eq 0 ]; then
 
@@ -313,7 +314,8 @@ case "$1" in
     exit 1
     fi
 
-    read -sp "Введите пароль: " password_db #https://www.geeksforgeeks.org/linux-unix/bash-script-read-user-input/ 
+    read -sp "Введите пароль: " password_db #https://www.geeksforgeeks.org/linux-unix/bash-script-read-user-input/
+    echo
 
     create_db $3 $password_db $2
     ;;
