@@ -46,9 +46,12 @@ services:
   ports:
    - "$4:5432"
   volumes:
-   - $2:/var/lib/postgresql
+   - $2-data:/var/lib/postgresql
   networks:
    - $2-net
+
+volumes:
+  $2-data:
 
 networks:
  $2-net:
@@ -71,9 +74,12 @@ services:
   ports:
    - ":$4:3306"
   volumes:
-   - $2:/var/lib/mysql
+   - $2-data:/var/lib/mysql
   networks:
    - $2-net
+
+volumes:
+  $2-data:
 
 networks:
  $2-net:
@@ -114,7 +120,7 @@ create_db()
 
     if create_compose $3 $container_name $2 $free_port; then
 
-    docker compose -f "$3-$1-compose.yml" up -d >/dev/null 2>&1
+    docker compose -f "$3-$1-compose.yml" up -d 
 
 
         if [ $? -eq 0 ]; then
