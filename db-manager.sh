@@ -69,7 +69,7 @@ services:
    MYSQL_ROOT_PASSWORD: $3
    MYSQL_DATABASE: $2
   ports:
-   - "$4:3306"
+   - "127.0.0.1:$4:3306"
   volumes:
    - /var/lib/$2:/var/lib/mysql
   networks:
@@ -78,6 +78,7 @@ services:
 networks:
  $2-net:
   driver: bridge
+  name: $2-net
 EOF
 
     else
