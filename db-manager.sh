@@ -298,10 +298,10 @@ stop_db() { # логика команды stop
 
 case "$1" in
 
-    #create type_db name_db password_db
+    #create type_db name_db
     "create")
 
-    if [ $# -ne 4 ]; then
+    if [ $# -ne 3 ]; then
     echo "Параметры указаны неправильно"
     usage_create
     exit 1
@@ -312,7 +312,9 @@ case "$1" in
     exit 1
     fi
 
-    create_db $3 $4 $2
+    read -sp "Введите пароль: " password_db #https://www.geeksforgeeks.org/linux-unix/bash-script-read-user-input/ 
+
+    create_db $3 $password_db $2
     ;;
 
 
