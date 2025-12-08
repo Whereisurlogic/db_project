@@ -46,7 +46,7 @@ services:
   ports:
    - "$4:5432"
   volumes:
-   - /var/lib/docker/volumes/$2:/var/lib/postgresql
+   - $2:/var/lib/postgresql
   networks:
    - $2-net
 
@@ -71,7 +71,7 @@ services:
   ports:
    - ":$4:3306"
   volumes:
-   - /var/lib/docker/volumes/$2:/var/lib/mysql
+   - $2:/var/lib/mysql
   networks:
    - $2-net
 
