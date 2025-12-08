@@ -114,10 +114,7 @@ create_db()
 {
     local container_name=$1;
 
-    if ! check_db_exits "$container_name"; then
-    echo "Контейнер с таким именем уже существует"
-    exit 1
-    fi
+    
 
     local free_port=$(find_free_port)
 
@@ -320,6 +317,11 @@ case "$1" in
 
     if ! check_db_type "$2"; then
     echo "Не удается найти данный ($2) тип базы данных. Правильные типы: ${dbs_type[*]}"
+    exit 1
+    fi
+
+    if ! check_db_exits "$3"; then
+    echo "Контейнер с таким именем уже существует"
     exit 1
     fi
 
