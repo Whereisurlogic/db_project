@@ -3,6 +3,14 @@
 dbs_type=("postgres" "mysql")
 SCRIPT_NAME=$(basename "$0")
 
+
+# PARAM $1 - имя контейнера
+delete_net() {
+
+    local name-net="$1-net"
+
+}
+
 find_free_port() {
     local port
     
@@ -48,21 +56,19 @@ create_compose() {
     if [ "${dbs_type[0]}" = "$1" ]; then
         cat > "$name_compose" << 'EOF'
 services:
-  postgres-db:
-    image: postgres:latest
-EOF
-        cat >> "$name_compose" << EOF
-    container_name: $2
-    environment:
-      POSTGRES_USER: '$2'
-      POSTGRES_PASSWORD: '$3'
-      POSTGRES_DB: '$2'
-    ports:
-      - "$4:5432"
-    volumes:
-      - ./$2:/var/lib/postgresql/data
-    networks:
-      - $2-net
+ $1-db:
+  image: postgres:latest
+  container_name: $2
+  environment:
+   POSTGRES_USER: $2
+   POSTGRES_PASSWORD: $3
+   POSTGRES_DB: $2
+  ports:
+   - "$4:5432"
+  volumes:
+   - /var/lib/$2:/var/lib/postgresql
+  networks:
+   - $2-net
 
 networks:
   $2-net:
@@ -72,22 +78,20 @@ EOF
     elif [ "${dbs_type[1]}" = "$1" ]; then
         cat > "$name_compose" << 'EOF'
 services:
-  mysql-db:
-    image: mysql:latest
-EOF
-        cat >> "$name_compose" << EOF
-    container_name: $2
-    environment:
-      MYSQL_USER: '$2'
-      MYSQL_PASSWORD: '$3'
-      MYSQL_ROOT_PASSWORD: '$3'
-      MYSQL_DATABASE: '$2'
-    ports:
-      - "$4:3306"
-    volumes:
-      - ./$2:/var/lib/mysql
-    networks:
-      - $2-net
+ $1-db:
+  image: mysql:latest
+  container_name: $2
+  environment:
+   MYSQL_USER: $2
+   MYSQL_PASSWORD: $3
+   MYSQL_ROOT_PASSWORD: $3
+   MYSQL_DATABASE: $2
+  ports:
+   - "$4:3306"
+  volumes:
+   - /var/lib/$2:/var/lib/mysql
+  networks:
+   - $2-net
 
 networks:
   $2-net:
@@ -385,12 +389,9 @@ case "$1" in
 
     echo "Удаляем контейнер $2..."
     if docker rm "$2" >/dev/null 2>&1; then
-        echo "Контейнер $2 успешно удален"
-        # Удаляем папку с данными, если она существует
-        if [ -d "./$2" ]; then
-            rm -rf "./$2"
-            echo "Папка с данными ./$2 удалена"
-        fi
+    docker volume prune -f >/dev/null 2>&1
+    docker network prune -f >/dev/null 2>&1
+    echo "Контейнер $2 успешно удален"
     else
         echo "Не удалось удалить контейнер $2"
         exit 1
