@@ -46,7 +46,7 @@ services:
   ports:
    - "$4:5432"
   volumes:
-   - /var/lib/$2:/var/lib/postgresql
+   - /var/lib/docker/volumes/$2:/var/lib/postgresql
   networks:
    - $2-net
 
@@ -69,9 +69,9 @@ services:
    MYSQL_ROOT_PASSWORD: $3
    MYSQL_DATABASE: $2
   ports:
-   - "127.0.0.1:$4:3306"
+   - ":$4:3306"
   volumes:
-   - /var/lib/$2:/var/lib/mysql
+   - /var/lib/docker/volumes/$2:/var/lib/mysql
   networks:
    - $2-net
 
