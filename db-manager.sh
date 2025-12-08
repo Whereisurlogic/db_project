@@ -52,10 +52,12 @@ services:
 
 volumes:
   $2-data:
+   name: $2-data
 
 networks:
  $2-net:
   driver: bridge
+  name: $2-net
 EOF
 
 
@@ -80,6 +82,7 @@ services:
 
 volumes:
   $2-data:
+   name: $2-data
 
 networks:
  $2-net:
@@ -368,8 +371,8 @@ case "$1" in
     docker stop "$2" >/dev/null 2>&1
 
 
-    if docker rm "$2" >/dev/null 2>&1; then
-    docker volume prune -f >/dev/null 2>&1
+    if docker rm "$2" -v >/dev/null 2>&1; then
+    docker volume rm "$2"-data >/dev/null 2>&1
     docker network prune -f >/dev/null 2>&1
     echo "Контейнер $2 успешно удален"
     else
