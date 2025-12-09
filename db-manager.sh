@@ -36,7 +36,7 @@ create_compose() {
 
         cat > "$name_compose" << EOF
 services:
- $1-db:
+ $2-db:
   image: $type:latest
   container_name: $2
   environment:
@@ -46,13 +46,18 @@ services:
   ports:
    - "$4:5432"
   volumes:
-   - /var/lib/$2:/var/lib/postgresql
+   - $2-data:/var/lib/postgresql
   networks:
    - $2-net
+
+volumes:
+  $2-data:
+   name: $2-data
 
 networks:
  $2-net:
   driver: bridge
+  name: $2-net
 EOF
 
 
@@ -60,7 +65,7 @@ EOF
         local type="${dbs_type[1]}"
         cat > "$name_compose" << EOF
 services:
- $1-db:
+ $2-db:
   image: $type:latest
   container_name: $2
   environment:
@@ -69,15 +74,20 @@ services:
    MYSQL_ROOT_PASSWORD: $3
    MYSQL_DATABASE: $2
   ports:
-   - "$4:3306"
+   - ":$4:3306"
   volumes:
-   - /var/lib/$2:/var/lib/mysql
+   - $2-data:/var/lib/mysql
   networks:
    - $2-net
+
+volumes:
+  $2-data:
+   name: $2-data
 
 networks:
  $2-net:
   driver: bridge
+  name: $2-net
 EOF
 
     else
@@ -104,16 +114,14 @@ create_db()
 {
     local container_name=$1;
 
-    if ! check_db_exits "$container_name"; then
-    echo "Контейнер с таким именем уже существует"
-    exit 1
-    fi
+    
 
     local free_port=$(find_free_port)
 
     if create_compose $3 $container_name $2 $free_port; then
 
-    docker compose -f "$3-$1-compose.yml" up -d
+    docker compose -f "$3-$1-compose.yml" up -d 
+
 
         if [ $? -eq 0 ]; then
 
@@ -298,10 +306,10 @@ stop_db() { # логика команды stop
 
 case "$1" in
 
-    #create type_db name_db password_db
+    #create type_db name_db
     "create")
 
-    if [ $# -ne 4 ]; then
+    if [ $# -ne 3 ]; then
     echo "Параметры указаны неправильно"
     usage_create
     exit 1
@@ -312,7 +320,15 @@ case "$1" in
     exit 1
     fi
 
-    create_db $3 $4 $2
+    if ! check_db_exits "$3"; then
+    echo "Контейнер с таким именем уже существует"
+    exit 1
+    fi
+
+    read -sp "Введите пароль: " password_db #https://www.geeksforgeeks.org/linux-unix/bash-script-read-user-input/
+    echo
+
+    create_db $3 $password_db $2
     ;;
 
 
@@ -357,8 +373,8 @@ case "$1" in
     docker stop "$2" >/dev/null 2>&1
 
 
-    if docker rm "$2" >/dev/null 2>&1; then
-    docker volume prune -f >/dev/null 2>&1
+    if docker rm "$2" -v >/dev/null 2>&1; then
+    docker volume rm "$2"-data >/dev/null 2>&1
     docker network prune -f >/dev/null 2>&1
     echo "Контейнер $2 успешно удален"
     else
