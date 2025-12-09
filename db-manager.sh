@@ -179,7 +179,6 @@ cat << KEFTEME
 ПАРАМЕТРЫ:
     TYPE          Тип базы данных (${dbs_type[@]})
     PROJECT       Имя проекта/экземпляра
-    PASSWORD      Пароль для базы данных
 
 KEFTEME
 }
