@@ -174,7 +174,7 @@ cat << KEFTEME
 Создание изолированного экземпляра базы данных
 
 ИСПОЛЬЗОВАНИЕ:
-    $SCRIPT_NAME create TYPE PROJECT PASSWORD
+    $SCRIPT_NAME create TYPE PROJECT
 
 ПАРАМЕТРЫ:
     TYPE          Тип базы данных (${dbs_type[@]})
