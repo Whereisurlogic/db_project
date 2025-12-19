@@ -404,15 +404,15 @@ case "$1" in
     fi
 
 
-    db_type=$(docker inspect "$2" --format='{{index .Config.Labels "com.docker.compose.service"}}')
+    db_type=$(docker inspect "$2" --format='{{.Config.Image}}')
     time=$(date +%Y-%m-%d_%H-%M-%S)
 
     if [ -n "$db_type" ]; then
         case "$db_type" in
-            "postgres-db")
+            "postgres:latest")
                 docker exec "$2" pg_dump -U "$2" "$2" > "$3/${2}_${time}.sql"
             ;;
-            "mysql-db")
+            "mysql:latest")
 
             docker exec -i "$2" mysqldump -u root --single-transaction -p "$2" > "$3/${2}_${time}.sql" # --single-transaction - изолирует процесс 
             ;;
