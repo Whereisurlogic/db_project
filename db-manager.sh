@@ -406,16 +406,26 @@ case "$1" in
 
     db_type=$(docker inspect "$2" --format='{{.Config.Image}}')
     time=$(date +%Y-%m-%d_%H-%M-%S)
+    read -sp "Введите пароль для шифрования бэкапа: " password_crypt
+    echo
 
     if [ -n "$db_type" ]; then
         case "$db_type" in
             "postgres:latest")
-                docker exec "$2" pg_dump -U "$2" "$2" > "$3/${2}_${time}.sql"
+                docker exec "$2" pg_dump -U "$2" "$2" | \
+                gzip | \
+                openssl enc -aes-256-cbc -pbkdf2 -salt -k "$password_crypt" -out "$3/${2}_${time}.sql.gz.enc"
             ;;
             "mysql:latest")
 
-            docker exec -i "$2" mysqldump -u root --single-transaction -p "$2" > "$3/${2}_${time}.sql" # --single-transaction - изолирует процесс 
+            read -sp "Введите пароль root mysql: " password_db
+            echo
+
+            docker exec -i "$2" mysqldump -u root "$password_db" --single-transaction -p "$2" | \  # --single-transaction - изолирует процесс 
+            gzip | \
+            openssl enc -aes-256-cbc -pbkdf2 -salt -k "$password_crypt" -out "$3/${2}_${time}.sql.gz.enc"
             ;;
+            
             *)
             echo "Неизвестный тип БД: $db_type"
             exit 1
