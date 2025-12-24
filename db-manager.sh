@@ -403,6 +403,11 @@ case "$1" in
     exit 1
     fi
 
+    if ! docker ps --format "{{.Names}}" | grep -q "^${2}$"; then
+    echo "Контейнер '$2' не запущен"
+    exit 1
+    fi
+
 
     db_type=$(docker inspect "$2" --format='{{.Config.Image}}')
     time=$(date +%Y-%m-%d_%H-%M-%S)
