@@ -403,19 +403,39 @@ case "$1" in
     exit 1
     fi
 
+    if ! docker ps --format "{{.Names}}" | grep -q "^${2}$"; then
+    echo "Контейнер '$2' не запущен"
+    exit 1
+    fi
+
 
     db_type=$(docker inspect "$2" --format='{{.Config.Image}}')
     time=$(date +%Y-%m-%d_%H-%M-%S)
+    read -sp "Введите пароль для шифрования бэкапа: " password_crypt
+    echo
 
     if [ -n "$db_type" ]; then
         case "$db_type" in
             "postgres:latest")
-                docker exec "$2" pg_dump -U "$2" "$2" > "$3/${2}_${time}.sql"
+                docker exec "$2" pg_dump -U "$2" "$2" | \
+                gzip | \
+                openssl enc -aes-256-cbc -pbkdf2 -salt -k "$password_crypt" -out "$3/${2}_${time}.sql.gz.enc"
             ;;
             "mysql:latest")
 
-            docker exec -i "$2" mysqldump -u root --single-transaction -p "$2" > "$3/${2}_${time}.sql" # --single-transaction - изолирует процесс 
+            read -sp "Введите пароль root mysql: " password_db
+            echo
+
+            if ! docker exec "$2" bash -c "MYSQL_PWD='$password_db' mysql -u root -e 'SELECT 1'" >/dev/null 2>&1; then
+            echo "Неверный пароль MySQL"
+            exit 1
+            fi
+
+            docker exec -i "$2" mysqldump -u root -p"$password_db" --single-transaction "$2" | \
+            gzip | \
+            openssl enc -aes-256-cbc -pbkdf2 -salt -k "$password_crypt" -out "$3/${2}_${time}.sql.gz.enc" # --single-transaction - изолирует процесс 
             ;;
+
             *)
             echo "Неизвестный тип БД: $db_type"
             exit 1
@@ -423,7 +443,7 @@ case "$1" in
         esac
 
         if [ $? -eq 0 ]; then
-        echo "Бэкап успешно создан: $3/${2}_${time}.sql"
+        echo "Бэкап успешно создан: $3/${2}_${time}.sql.gz.enc"
         else
         echo "Не удалось сделать бекап"
         rm -f "$3/${2}_${time}.sql"
